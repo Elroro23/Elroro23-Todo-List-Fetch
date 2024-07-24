@@ -1,69 +1,75 @@
+//Realizamos las importaciones necesarias.
 import React from "react";
 import { useState, useEffect } from "react";
-
+//Definimos nuestro componente.
 const TodoFetch = () => {
-    const [todos, setTodos] = useState([]);
-    const [inputValue, setInputValue] = useState("");
-
+    //Definimos nuestros estados e inicializamos los hooks(valor inicial de las variables).
+    const [todos, setTodos] = useState([]); //Lo inicializamos como un array vacío(representa la lista de tareas).
+    const [inputValue, setInputValue] = useState(""); //Lo inicializamos como un string vacío(representa el campo de texto).
+    //Añadimos el hook "useEffect()" que contiene dos parámetros("getTodos()" y "[]").
     useEffect(() => {
-        getTodos(); //Ejecutamos la función "getTodos".
-    }, []); //El array de dependencias vacío hace que "getTodos" se ejecute solo cuando "useEffect" se monte.
-
+        getTodos(); //En este caso el hook ejecutará la función "getTodos()"(Solicita al servidor la lista de tareas de Elroro23).
+    }, []); //El array de dependencias vacío hace que "getTodos()" se ejecute solo cuando "useEffect" se monte(una vez).
+    //Guardamos la URL de nuestro TODO`S LIST en una variable(por comodidad).
     const urlTodos = "https://playground.4geeks.com/todo/"
 
-    function getTodos() { //Función para obtener los datos del servidor.
-        fetch(urlTodos + "users/Elroro23", { //Especificamos la "url" en el fetch
-            method: "GET", //Método, en este caso solicitamos información de nuestro usuario.
+    function getTodos() { //Función para obtener la lista de tareas del servidor.
+        fetch(urlTodos + "users/Elroro23", { //El "fetch()" hace la solicitud al servidor(aquí se coloca la url).
+            method: "GET", //Con el método "GET" solicitamos información de nuestro usuario(lista de tareas).
         })
-            .then(response => response.json()) //Convertimos la respuesta en un objeto "json".
-            .then((data) => { //Objeto "json"
-                setTodos(data.todos); //"setTodos" actualiza "todos" con la "data" obtenida de "json".
-            console.log(data.todos);
+            //.then() recibe una respuesta del servidor.
+            .then(response => response.json()) //Convertimos esa respuesta en un objeto "json" para que "js" pueda leerla.
+            .then((data) => { //Data es un Objeto "json"(las tareas que hemos escrito en el TODO`S).
+                setTodos(data.todos); //"setTodos" actualiza "todos" con la "data" obtenida de "json".(actualiza la lista de tareas con las tareas).
+                console.log(data.todos); //Podemos ver cuales son esas tareas.
             })
-            .catch((err) => { //Si surge algún error ".cath()" me avisa.
-                console.error(err);
+            .catch((err) => { //Si surge algún error ".cath()" lo captura.
+                console.error(err); //Y "console.error(err)" nos lo muestra en la consola.
             });
     }
+    //Función que agrega las tareas al servidor.
     function addTodo() {
         let newTodo = { //Creamos un objeto que tiene tiene como propiedad "label" que posee el valor actual del campo de entrada "inputValue".
-            label: inputValue,
-            is_done: false
+            label: inputValue, //"label:" contendrá la tarea. "inputValue" será la tarea(una vez escrita y haberle dado a "Enter").
+            is_done: false //Puramente estético.
         }
-        fetch(urlTodos + "todos/Elroro23", {
-            method: "POST",  //Vamos agregar tareas a la base de datos por eso utilizamos "post".
-            body: JSON.stringify(newTodo), //Convertimos nuestro objeto "newTodo" a "json".
+        fetch(urlTodos + "todos/Elroro23", { //Solicitamos al servidor agregar tareas a nuestro TODO`S.
+            method: "POST",  //Vamos agregar tareas al servidor por eso utilizamos "post".
+            body: JSON.stringify(newTodo), //Convertimos nuestro objeto "newTodo" js a "json" para que el servidor pueda leerlo.
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json" //Especifícamos el tipo de contenido que estamos enviando en el body(json).
             }
         })
-            .then(response => response.json()) //Convierte la respuesta a "json".
-            .then(() => {
-                getTodos(); //Llama a "getTodos" para actualizar la lista con los datos más recientes.
-                setInputValue(""); //Limpia el campo de texto.
+            .then(response => response.json()) //Convierte la respuesta a un objeto "json".
+            .then(() => { //No utilizamos el resultado ya que no nos interesa porque estamos enviando información.
+                getTodos(); //Llama a "getTodos" para obtener la lista de tareas actualizada una vez añadida una tarea.
+                setInputValue(""); //Limpiamos el campo de texto luego de ñadir una tarea.
             })
-            .catch((err) => {
-                console.error(err);
+            .catch((err) => { //Capturamos un error si es que lo hay.
+                console.error(err); //Lo imprimimos en la consola.
             });
     }
-    function deleteTodo(todoId) { //Función para eliminar cada tarea.
-        fetch(urlTodos + `todos/${todoId}`, { //mediante su "id"
-            method: "DELETE",
+    function deleteTodo(todoId) { //Función para eliminar una tarea.
+        fetch(urlTodos + `todos/${todoId}`, { //Solicitamos al servidor eliminar una tarea por su "Id".
+
+            method: "DELETE", //Con este método eliminamos la data.
         })
-            .then(() => {
-                getTodos();
+            .then(() => { //No necesitamos procesar datos adicionales por eso solo utilizamos un ".then()".
+                getTodos(); //Llamamos a "getTodos()" para actualizar la lista de tareas.
             })
-            .catch((err) => {
-                console.error(err);
+            .catch((err) => { //Si hay error lo capturamos.
+                console.error(err); //Imprimimos el error en la consola.
             });
     }
-    const handleKeyDown = (e) => { //Si le damos "Enter" y el campo de texto no está vacío ejecuta "addTodo".
+    //Función para agregar tareas a la lista que maneja un evento "onKeyDown".
+    const handleKeyDown = (e) => { //Si le damos "Enter" y el campo de texto no está vacío llama a "addTodo()".
         if (e.key === "Enter" && inputValue.trim() !== "") {
-            addTodo();
+            addTodo(); //Llamamos a "addTodo()" que agrega la tarea al servidor(objeto con la tarea que escribimos"inputValue").
         }
     };
-
-    const handleDelete = (todoId) => { //le pasamos el "id" de cada tarea como parámetro.
-        deleteTodo(todoId) //Llamamos a la función para eliminar cada tarea
+    //Función para eliminar tarea mediante el "Id" de cada una.
+    const handleDelete = (todoId) => { //Le pasamos el "todoId" como parámetro(representa el id de cada tarea que nos da el servidor cuando hacemos "get").
+        deleteTodo(todoId) //Llamamos a la función para eliminar cada tarea con "todoId" como parámetro.
     };
     return (
 
@@ -75,15 +81,15 @@ const TodoFetch = () => {
                 className="form-control"
                 id="exampleInputEmail1"
                 placeholder="What needs to be done?"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)} //Actualiza el estado inputValue con el valor del campo de entrada.
-                onKeyDown={handleKeyDown} // Llama a handleKeyDown cuando se presiona la tecla "Enter" en el campo de entrada.
+                value={inputValue} //Sincronizamos el valor del campo de texto con el estado para tener un mayor control.
+                onChange={(e) => setInputValue(e.target.value)} //Actualiza el estado "inputValue" con el valor del campo de entrada(lo que se escribe).
+                onKeyDown={handleKeyDown} // Llama a "handleKeyDown" cuando se presiona la tecla "Enter" en el campo de entrada(agrega la tarea).
             />
-            {todos.map((todo, index) => (
-                <div key={index} className="todo-list">
+            {todos.map(todo => ( //Mapeamos cada tarea agregada y la mostramos en un div.
+                <div key={todo.id} className="todo-list">
                     <p style={{ display: 'inline', marginRight: '10px' }}>{todo.label}</p> {/* Muestra la propiedad label del todo */}
                     <i className="fa-solid fa-trash"
-                        onClick={() => handleDelete(todo.id)} //Pasamos el id de cada tarea a "handleDelete"
+                        onClick={() => handleDelete(todo.id)} //Pasamos el id de cada tarea a "handleDelete" para poder eliminarla al hacer click al icono.
                         style={{ cursor: 'pointer', color: 'red' }}></i>
                 </div>
             ))}
