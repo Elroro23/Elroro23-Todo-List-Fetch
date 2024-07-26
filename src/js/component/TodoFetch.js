@@ -18,20 +18,29 @@ const TodoFetch = () => {
             method: "GET", //Con el método "GET" solicitamos información de nuestro usuario(lista de tareas).
         })
             //.then() recibe una respuesta del servidor.
-            .then(response => response.json()) //Convertimos esa respuesta en un objeto "json" para que "js" pueda leerla.
+            .then(response => {
+                if (!response.ok) { //Verificamos el status del objeto response, si NO es "ok" añadimos una excepción con la siguiente declaración.
+                    throw new Error("La lista no existe") //Esta declaración interrumpe el código y no ejecuta lo demás.
+                }
+                return response.json(); //Si el status de response es "ok" retornamos el objeto en formato .json() para js pueda leerlo.
+            })
             .then((data) => { //Data es un Objeto "json"(las tareas que hemos escrito en el TODO`S).
                 setTodos(data.todos); //"setTodos" actualiza "todos" con la "data" obtenida de "json".(actualiza la lista de tareas con las tareas).
                 console.log(data.todos); //Podemos ver cuales son esas tareas.
             })
             .catch((err) => { //Si surge algún error ".cath()" lo captura.
-                console.error(err); //Y "console.error(err)" nos lo muestra en la consola.
+                if (err.message === "La lista no existe") { //Si la lista de tareas no existe, llamamos "createdTodoList"(crea la lista de tareas).
+                    createdTodoList();
+                } else {
+                    console.error(err); //Si la lista existe pero hay un error "console.error(err)" nos lo muestra en la consola.
+                }
             });
     }
     //Función que agrega las tareas al servidor.
     function addTodo() {
         let newTodo = { //Creamos un objeto que tiene tiene como propiedad "label" que posee el valor actual del campo de entrada "inputValue".
             label: inputValue, //"label:" contendrá la tarea. "inputValue" será la tarea(una vez escrita y haberle dado a "Enter").
-            is_done: false //Puramente estético.
+            is_done: true //Puramente estético.
         }
         fetch(urlTodos + "todos/Elroro23", { //Solicitamos al servidor agregar tareas a nuestro TODO`S.
             method: "POST",  //Vamos agregar tareas al servidor por eso utilizamos "post".
@@ -55,12 +64,36 @@ const TodoFetch = () => {
             method: "DELETE", //Con este método eliminamos la data.
         })
             .then(() => { //No necesitamos procesar datos adicionales por eso solo utilizamos un ".then()".
+                if (!response.ok) { //Si response.ok es false mostramos la siguiente excepción.
+                    throw new Error("Error deleting todo"); //Esta excepción interrumpe el código por eso no es necesario "ELSE"
+                }
+                console.log("Todo deleted successfully"); //Si response.ok es true mostramos el mensaje al eliminar la tarea.
                 getTodos(); //Llamamos a "getTodos()" para actualizar la lista de tareas.
             })
             .catch((err) => { //Si hay error lo capturamos.
                 console.error(err); //Imprimimos el error en la consola.
             });
     }
+//Función para crear la lista de tareas cuando esta no exista.
+    function createdTodoList() {
+        fetch(urlTodos + "users/Elroro23", { //Solicitamos añadir datos al servidor mediante el método "POST".
+            method: "POST",
+            body: JSON.stringify([]), //Añadimos un array vacío(lista de tareas).
+            headers: {
+                "Content-Type": "application/json" //Indicamos el contenido del body(formato json()).
+            }
+        })
+            .then(response => response.json()) //Convertimos la respuesta en .json()
+
+            .then(data => { //data es el objeto de la respuesta .json()
+                console.log("Create response:" + data); //Avisamos con un console.log la captura de la respuesta.
+                getTodos(); //Llamamos a "getTodos()" para obtener la lista actualizada desde el servidor.
+            })
+            .catch((err) => { //Si ocurre algún error lo capturamos y mostramos en la consola.
+                console.error(err);
+            })
+    }
+
     //Función para agregar tareas a la lista que maneja un evento "onKeyDown".
     const handleKeyDown = (e) => { //Si le damos "Enter" y el campo de texto no está vacío llama a "addTodo()".
         if (e.key === "Enter" && inputValue.trim() !== "") {
