@@ -20,20 +20,18 @@ const TodoFetch = () => {
             //.then() recibe una respuesta del servidor.
             .then(response => {
                 if (!response.ok) { //Verificamos el status del objeto response, si NO es "ok" añadimos una excepción con la siguiente declaración.
+                    createdTodoList(); //Si la condición NO es "ok" llamamos nuestra función que crea la lista de tareas.
                     throw new Error("La lista no existe") //Esta declaración interrumpe el código y no ejecuta lo demás.
                 }
                 return response.json(); //Si el status de response es "ok" retornamos el objeto en formato .json() para js pueda leerlo.
             })
             .then((data) => { //Data es un Objeto "json"(las tareas que hemos escrito en el TODO`S).
+                console.log("Datos recibidos:", data); //Podemos ver cuales son esas tareas.
                 setTodos(data.todos); //"setTodos" actualiza "todos" con la "data" obtenida de "json".(actualiza la lista de tareas con las tareas).
-                console.log(data.todos); //Podemos ver cuales son esas tareas.
             })
             .catch((err) => { //Si surge algún error ".cath()" lo captura.
-                if (err.message === "La lista no existe") { //Si la lista de tareas no existe, llamamos "createdTodoList"(crea la lista de tareas).
-                    createdTodoList();
-                } else {
-                    console.error(err); //Si la lista existe pero hay un error "console.error(err)" nos lo muestra en la consola.
-                }
+                console.error(err); //Si la lista existe pero hay un error "console.error(err)" nos lo muestra en la consola.
+
             });
     }
     //Función que agrega las tareas al servidor.
@@ -60,7 +58,6 @@ const TodoFetch = () => {
     }
     function deleteTodo(todoId) { //Función para eliminar una tarea.
         fetch(urlTodos + `todos/${todoId}`, { //Solicitamos al servidor eliminar una tarea por su "Id".
-
             method: "DELETE", //Con este método eliminamos la data.
         })
             .then(() => { //No necesitamos procesar datos adicionales por eso solo utilizamos un ".then()".
@@ -74,7 +71,7 @@ const TodoFetch = () => {
                 console.error(err); //Imprimimos el error en la consola.
             });
     }
-//Función para crear la lista de tareas cuando esta no exista.
+    //Función para crear la lista de tareas cuando esta no exista.
     function createdTodoList() {
         fetch(urlTodos + "users/Elroro23", { //Solicitamos añadir datos al servidor mediante el método "POST".
             method: "POST",
